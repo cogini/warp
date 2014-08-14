@@ -4,6 +4,7 @@ from datetime import datetime
 from storm.locals import *
 from warp import runtime
 from warp.common import access
+from warp.common.store import DBConnectionPool
 
 from warp.common.schema import stormSchema
 
@@ -97,18 +98,52 @@ class DBSession(Storm):
             self.touched = nowstamp()
             runtime.avatar_store.commit()
 
-    def addFlashMessage(self, msg, *args, **kwargs):
-        if self.uid not in _MESSAGES:
-            _MESSAGES[self.uid] = []
-        _MESSAGES[self.uid].append((msg, args, kwargs))
 
-    def getFlashMessages(self, clear=True):
-        if self.uid not in _MESSAGES:
-            return []
-        messages = _MESSAGES[self.uid][:]
-        if clear:
-            del _MESSAGES[self.uid]
-        return messages
+    def addFlashMessage(self, msg, in_memory=False, *args, **kwargs):
+
+        # TODO HXP: remove this after DB messages have been tested
+        if in_memory:
+            if self.uid not in _MESSAGES:
+                _MESSAGES[self.uid] = []
+            _MESSAGES[self.uid].append((msg, args, kwargs))
+            return
+
+        with DBConnectionPool.getConnection() as store:
+            message_storage = store.get(DBSessionStorage, (self.uid, u'messages'))
+            if message_storage:
+                message_storage.value.append((msg, args, kwargs))
+            else:
+                message_storage = DBSessionStorage()
+                message_storage.uid = self.uid
+                message_storage.key = u'messages'
+                message_storage.value = [(msg, args, kwargs)]
+                store.add(message_storage)
+            store.commit()
+
+
+    def getFlashMessages(self, clear=True, in_memory=False):
+
+        # TODO HXP: remove this after DB messages have been tested
+        if in_memory:
+            if self.uid not in _MESSAGES:
+                return []
+            messages = _MESSAGES[self.uid][:]
+            if clear:
+                del _MESSAGES[self.uid]
+            return messages
+
+        with DBConnectionPool.getConnection() as store:
+            message_storage = store.find(DBSessionStorage, And(
+                DBSessionStorage.uid==self.uid,
+                DBSessionStorage.key==u'messages',
+            )).one()
+            if not message_storage:
+                return []
+            messages = message_storage.value
+            if clear:
+                store.remove(message_storage)
+                store.commit()
+            return messages
 
 
     def hasAvatar(self):
@@ -132,6 +167,16 @@ class DBSession(Storm):
 
     def __repr__(self):
         return "<Session '%s'>" % self.uid
+
+
+@stormSchema.versioned
+class DBSessionStorage(Storm):
+    __version__ = 'hxp_1'
+    __storm_table__ = 'warp_session_storage'
+    __storm_primary__ = 'uid', 'key'
+    uid = RawStr()
+    key = Unicode()
+    value = JSON()
 
 
 # ---------------------------
