@@ -1,3 +1,4 @@
+from __future__ import print_function
 from twisted.python import log
 
 from storm.locals import *
@@ -22,16 +23,14 @@ def setupStore():
     tableExists = sql['tableExists'] = sqlBundle['tableExists']
 
     for (table, creationSQL) in sqlBundle['creations']:
-
         if not tableExists(avatar_store, table):
 
             # Unlike log.message, this works during startup
-            print "~~~ Creating Warp table '%s'" % table
+            print("~~~ Creating Warp table '%s'" % table)
 
             if not isinstance(creationSQL, tuple): creationSQL = [creationSQL]
             for sqlCmd in creationSQL: avatar_store.execute(sqlCmd)
             avatar_store.commit()
-
 
 def getCreationSQL(store):
     connType = store._connection.__class__.__name__
