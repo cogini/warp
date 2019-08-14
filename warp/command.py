@@ -18,11 +18,6 @@ from warp.common import translate
 from warp import runtime
 from warp.common import schema
 
-from storm.database import create_database
-from storm.twisted.store import StorePool
-
-from txpostgres import txpostgres
-
 class Options(usage.Options):
     optParameters = (
         ("siteDir", "d", ".", "Base directory of the warp site"),
@@ -193,7 +188,11 @@ def initialize(options):
     pool.start()
     runtime.pool = pool
 
-    tx_pool = txpostgres.ConnectionPool(None, min=1, dsn=config['db'])
+    tx_pool = txpostgres.ConnectionPool(None, min=1,
+                                        dbname=uri.database,
+                                        user=uri.username,
+                                        password=uri.pasword,
+                                        host=uri.host)
     d = tx_pool.start()
     d.addCallback(cbPoolStarted)
 
