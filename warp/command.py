@@ -105,6 +105,10 @@ def doStartup(options):
     if hasattr(configModule, 'startup'):
         configModule.startup()
 
+def cb_pool_started(result):
+    print("tx_pool started")
+    runtime.tx_pool = result
+
 def initialize(options):
     """Load Warp config and intialize"""
     siteDir = FilePath(options['siteDir'])
@@ -141,10 +145,8 @@ def initialize(options):
     runtime.pool = pool
 
     tx_pool = txpostgres.ConnectionPool(None, min=1, dsn=config['db'])
-    wfd = waitForDeferred(tx_pool.start())
-    yield wfd
-    wfd.getResult()
-    runtime.tx_pool = tx_pool
+    d = tx_pool.start()
+    d.addCallback(cbPoolStarted)
 
     translate.loadMessages()
 
