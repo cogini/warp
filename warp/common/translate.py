@@ -2,20 +2,21 @@ import operator
 import os.path
 import glob
 
-try: import json
-except ImportError: import simplejson as json
+try:
+    import json
+except ImportError:
+    import simplejson as json
 
 from warp.runtime import config, messages
 
-
 def loadMessages():
     config.get("messageLoader", defaultLoader)()
-    
+
 def defaultLoader():
     messages.clear()
     loadMessageDir(config['warpDir'].child('messages'))
     loadMessageDir(config['siteDir'].child('messages'))
-    
+
 def getTranslator(language):
     langDict = messages.get(language, {})
     def t(term, *args, **kwargs):
@@ -31,17 +32,17 @@ def getTranslator(language):
         translation = namespace.get(term, term)
 
         if args:
-            try: 
+            try:
                 return translation % args
             except TypeError:
                 return u"COULDN'T INTERPOLATE: %s // %s" % (translation, args)
-            
+
         if kwargs:
-            try: 
+            try:
                 return translation % kwargs
             except KeyError:
                 return u"COULDN'T INTERPOLATE: %s // %s" % (translation, kwargs)
-            
+
         return translation
 
     return t
@@ -62,7 +63,7 @@ def _mergeDicts(update, target, prefix=[]):
             tv = target.setdefault(k, {})
             if not isinstance(tv, dict):
                 raise ValueError(
-                    "%s is a dict in update but not in target" 
+                    "%s is a dict in update but not in target"
                     % ":".join(prefix + [k]))
             _mergeDicts(v, tv, prefix + [k])
         else:
