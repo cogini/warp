@@ -135,7 +135,7 @@ def initialize(options):
 
     if config.get('trace'):
         import storm.tracer
-        debug(True, stream=sys.stdout)
+        storm.tracer.debug(True, stream=sys.stdout)
 
     # Store pool
     min_size = config.get('db_pool_min', 5)
