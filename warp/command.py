@@ -178,7 +178,7 @@ def initialize(options):
 
     if config.get('trace'):
         import storm.tracer
-        debug(True, stream=sys.stdout)
+        storm.tracer.debug(True, stream=sys.stdout)
 
     start_storm_pool(database, config)
     print("Started storm pool")
