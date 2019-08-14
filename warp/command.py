@@ -147,7 +147,7 @@ def start_storm_pool(database, config):
     pool.start()
     runtime.pool = pool
 
-def cb_pool_started(result):
+def cbPoolStarted(result):
     print("tx_pool started")
     runtime.tx_pool = result
 
