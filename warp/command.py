@@ -1,15 +1,19 @@
 from __future__ import print_function
 import sys
-
 from inspect import getargspec
 
 from twisted.python import usage, reflect, log
 from twisted.python.filepath import FilePath
+from twisted.internet.defer import waitForDeferred, succeed, fail
 
 from warp.webserver import resource, site
 from warp.common import store, translate
 from warp import runtime
 
+import storm.database
+import storm.twisted.store
+
+from txpostgres import txpostgres
 
 class Options(usage.Options):
     optParameters = (
@@ -78,7 +82,6 @@ def register(shortName=None, skipConfig=False, needStartup=False, optionsParser=
         return wrapped
     return decorator
 
-
 def maybeRun(options):
     subCommand = options.subCommand
 
@@ -87,11 +90,9 @@ def maybeRun(options):
         command(options)
         raise SystemExit
 
-
 def getSiteDir(options):
     """Get `siteDir` out of `options`"""
     return FilePath(options['siteDir'])
-
 
 def doStartup(options):
     """Execute startup function after checking schema if necessary"""
@@ -106,13 +107,13 @@ def doStartup(options):
 
 def initialize(options):
     """Load Warp config and intialize"""
+
     site_dir = FilePath(options['siteDir'])
     sys.path.insert(0, site_dir.path)
 
     print("Loading config from {}".format(options['config']))
     config_module = reflect.namedModule(options['config'])
     config = config_module.config
-    runtime.config.update(config)
 
     runtime.config['siteDir'] = site_dir
     runtime.config['warpDir'] = FilePath(runtime.__file__).parent()
@@ -121,15 +122,34 @@ def initialize(options):
         runtime.config["schema"] = runtime.config.get("schema", {})
         runtime.config["schema"]["check"] = False
 
-    store.setupStore()
+    # Set up database
+    # uri = storm.uri.URI(config['db'])
+    database = storm.database.create_database(config['db'])
+
+    # Old store with single db connection
+    # store.setupStore()
+    runtime.avatar_store.__init__(database)
+
+    if config.get('trace'):
+        import storm.tracer
+        storm.tracer.debug(True, stream=sys.stdout)
+
+    # Store pool
+    pool = storm.twisted.store.StorePool(database, 5, 10)
+    pool.start()
+    runtime.pool = pool
+
+    tx_pool = txpostgres.ConnectionPool(None, min=1, dsn=config['db'])
+    wfd = waitForDeferred(tx_pool.start())
+    yield wfd
+    wfd.getResult()
+    runtime.tx_pool = tx_pool
+
     translate.loadMessages()
 
-    factory = site.WarpSite(resource.WarpResourceWrapper())
-
-    runtime.config['warpSite'] = factory
+    runtime.config['warpSite'] = site.WarpSite(resource.WarpResourceWrapper())
 
     return config_module
-
 
 # Pre-defined commands -----------------------------------------------
 
