@@ -135,7 +135,9 @@ def initialize(options):
         storm.tracer.debug(True, stream=sys.stdout)
 
     # Store pool
-    pool = storm.twisted.store.StorePool(database, 5, 10)
+    min_size = config.get('db_pool_min', 5)
+    max_size = config.get('db_pool_max', 5)
+    pool = storm.twisted.store.StorePool(database, min_size, max_size)
     pool.start()
     runtime.pool = pool
 
