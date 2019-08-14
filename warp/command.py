@@ -12,7 +12,7 @@ from warp import runtime
 
 from storm.database import create_database
 from storm.twisted.store import StorePool
-import storm.uri
+from storm.uri import URI
 
 from txpostgres import txpostgres
 
@@ -128,7 +128,7 @@ def initialize(options):
         runtime.config["schema"]["check"] = False
 
     # Set up database
-    uri = storm.uri.URI(config['db'])
+    uri = URI(config['db'])
     database = create_database(uri)
 
     # Old store with single db connection
