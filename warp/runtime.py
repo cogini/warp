@@ -17,7 +17,7 @@ store = avatar_store
 pool = None
 
 # txpostgres pool
-tx_pool - None
+tx_pool = None
 
 templateLookup = TemplateLookup.__new__(TemplateLookup)
 
