@@ -11,11 +11,17 @@ from txpostgres.reconnection import DeadConnectionDetector
 
 from twisted.python import usage, reflect, log
 from twisted.python.filepath import FilePath
+from twisted.internet.defer import waitForDeferred, succeed, fail
 
 from warp.webserver import resource, site
 from warp.common import translate
 from warp import runtime
 from warp.common import schema
+
+import storm.database
+import storm.twisted.store
+
+from txpostgres import txpostgres
 
 class Options(usage.Options):
     optParameters = (
@@ -106,9 +112,9 @@ def doStartup(options):
         from warp.common import schema
         schema.migrate()
 
-    configModule = reflect.namedModule(options['config'])
-    if hasattr(configModule, 'startup'):
-        configModule.startup()
+    config_module = reflect.namedModule(options['config'])
+    if hasattr(config_module, 'startup'):
+        config_module.startup()
 
 def cb_pool_started(result):
     log.msg("Started tx_pool")
@@ -149,7 +155,6 @@ def initialize(options):
     print("Loading config from {}".format(options['config']))
     config_module = reflect.namedModule(options['config'])
     config = config_module.config
-    runtime.config.update(config)
 
     runtime.config['siteDir'] = site_dir
     runtime.config['warpDir'] = FilePath(runtime.__file__).parent()
@@ -177,12 +182,22 @@ def initialize(options):
     d = start_tx_pool(uri, 3)
     d.addCallback(cb_pool_started)
 
+    # Store pool
+    pool = storm.twisted.store.StorePool(database, 5, 10)
+    pool.start()
+    runtime.pool = pool
+
+    tx_pool = txpostgres.ConnectionPool(None, min=1, dsn=config['db'])
+    wfd = waitForDeferred(tx_pool.start())
+    yield wfd
+    wfd.getResult()
+    runtime.tx_pool = tx_pool
+
     translate.loadMessages()
 
     runtime.config['warpSite'] = site.WarpSite(resource.WarpResourceWrapper())
 
     return config_module
-
 
 # Pre-defined commands -----------------------------------------------
 
