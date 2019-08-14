@@ -18,8 +18,8 @@ from warp.common import translate
 from warp import runtime
 from warp.common import schema
 
-import storm.database
-import storm.twisted.store
+from storm.database import create_database
+from storm.twisted.store import StorePool
 
 from txpostgres import txpostgres
 
@@ -178,7 +178,7 @@ def initialize(options):
 
     if config.get('trace'):
         import storm.tracer
-        storm.tracer.debug(True, stream=sys.stdout)
+        debug(True, stream=sys.stdout)
 
     start_storm_pool(database, config)
     print("Started storm pool")
@@ -189,7 +189,7 @@ def initialize(options):
     # Store pool
     min_size = config.get('db_pool_min', 5)
     max_size = config.get('db_pool_max', 5)
-    pool = storm.twisted.store.StorePool(database, min_size, max_size)
+    pool = StorePool(database, min_size, max_size)
     pool.start()
     runtime.pool = pool
 
