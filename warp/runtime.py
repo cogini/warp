@@ -13,6 +13,12 @@ avatar_store = CommitEventStore.__new__(CommitEventStore)
 # Warp never uses this name, so it can be safely changed or removed.
 store = avatar_store
 
+# Storm db pool
+pool = None
+
+# txpostgres pool
+tx_pool - None
+
 templateLookup = TemplateLookup.__new__(TemplateLookup)
 
 config = {}
