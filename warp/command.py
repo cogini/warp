@@ -148,7 +148,7 @@ def initialize(options):
     tx_pool = txpostgres.ConnectionPool(None, min=1,
                                         dbname=uri.database,
                                         user=uri.username,
-                                        password=uri.pasword,
+                                        password=uri.password,
                                         host=uri.host)
     d = tx_pool.start()
     d.addCallback(cbPoolStarted)
