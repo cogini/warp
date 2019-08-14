@@ -12,6 +12,7 @@ from warp import runtime
 
 from storm.database import create_database
 from storm.twisted.store import StorePool
+import storm.uri
 
 from txpostgres import txpostgres
 
