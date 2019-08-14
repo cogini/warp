@@ -105,7 +105,7 @@ def doStartup(options):
     if hasattr(configModule, 'startup'):
         configModule.startup()
 
-def cb_pool_started(result):
+def cbPoolStarted(result):
     print("tx_pool started")
     runtime.tx_pool = result
 
