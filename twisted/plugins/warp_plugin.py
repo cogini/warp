@@ -14,10 +14,9 @@ class WarpServiceMaker(object):
     options = command.Options
 
     def makeService(self, options):
-
         command.maybeRun(options)
 
-        configModule = command.loadConfig(options)
+        configModule = command.initialize(options)
         config = runtime.config
         port = config['port']
         factory = config['warpSite']
@@ -34,6 +33,5 @@ class WarpServiceMaker(object):
 
         command.doStartup(options)
         return service
-
 
 serviceMaker = WarpServiceMaker()
