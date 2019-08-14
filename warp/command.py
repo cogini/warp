@@ -126,8 +126,8 @@ def initialize(options):
         runtime.config["schema"]["check"] = False
 
     # Set up database
-    # uri = storm.uri.URI(config['db'])
-    database = create_database(config['db'])
+    uri = storm.uri.URI(config['db'])
+    database = create_database(uri)
 
     # Old store with single db connection
     # store.setupStore()
@@ -144,7 +144,11 @@ def initialize(options):
     pool.start()
     runtime.pool = pool
 
-    tx_pool = txpostgres.ConnectionPool(None, min=1, dsn=config['db'])
+    tx_pool = txpostgres.ConnectionPool(None, min=1,
+                                        dbname=uri.database,
+                                        user=uri.username,
+                                        password=uri.pasword,
+                                        host=uri.host)
     d = tx_pool.start()
     d.addCallback(cbPoolStarted)
 
