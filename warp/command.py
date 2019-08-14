@@ -1,14 +1,19 @@
+from __future__ import print_function
 import sys
-
 from inspect import getargspec
 
-from twisted.python import usage, reflect
+from twisted.python import usage, reflect, log
 from twisted.python.filepath import FilePath
+from twisted.internet.defer import waitForDeferred, succeed, fail
 
 from warp.webserver import resource, site
 from warp.common import store, translate
 from warp import runtime
 
+import storm.database
+import storm.twisted.store
+
+from txpostgres import txpostgres
 
 class Options(usage.Options):
     optParameters = (
@@ -21,7 +26,6 @@ class Options(usage.Options):
     )
 
     subCommands = []
-
 
 _commands = {}
 
@@ -69,7 +73,7 @@ def register(shortName=None, skipConfig=False, needStartup=False, optionsParser=
 
         def wrapped(options):
             if not skipConfig:
-                loadConfig(options)
+                initialize(options)
             if needStartup:
                 doStartup(options)
             fn(options, *options.subOptions.get("args", ()))
@@ -77,7 +81,6 @@ def register(shortName=None, skipConfig=False, needStartup=False, optionsParser=
         _commands[name] = wrapped
         return wrapped
     return decorator
-
 
 def maybeRun(options):
     subCommand = options.subCommand
@@ -87,15 +90,12 @@ def maybeRun(options):
         command(options)
         raise SystemExit
 
-
 def getSiteDir(options):
-    """Utility function to get the `siteDir` out of `options`"""
+    """Get `siteDir` out of `options`"""
     return FilePath(options['siteDir'])
 
-
 def doStartup(options):
-    """Utility function to execute the startup function, after
-    checking the schema if necessary"""
+    """Execute startup function after checking schema if necessary"""
     from warp.common.schema import getConfig
     if getConfig()["check"]:
         from warp.common import schema
@@ -105,9 +105,8 @@ def doStartup(options):
     if hasattr(configModule, 'startup'):
         configModule.startup()
 
-
-def loadConfig(options):
-    """Load the Warp config"""
+def initialize(options):
+    """Load Warp config and intialize"""
     siteDir = FilePath(options['siteDir'])
     sys.path.insert(0, siteDir.path)
 
@@ -122,30 +121,49 @@ def loadConfig(options):
         runtime.config["schema"] = runtime.config.get("schema", {})
         runtime.config["schema"]["check"] = False
 
-    store.setupStore()
+    # Set up database
+    # uri = storm.uri.URI(config['db'])
+    database = storm.database.create_database(config['db'])
+
+    # Old store with single db connection
+    # store.setupStore()
+    runtime.avatar_store.__init__(database)
+
+    if config.get('trace'):
+        import storm.tracer
+        storm.tracer.debug(True, stream=sys.stdout)
+
+    # Store pool
+    pool = storm.twisted.store.StorePool(database, 5, 10)
+    pool.start()
+    runtime.pool = pool
+
+    tx_pool = txpostgres.ConnectionPool(None, min=1, dsn=config['db'])
+    wfd = waitForDeferred(tx_pool.start())
+    yield wfd
+    wfd.getResult()
+    runtime.tx_pool = tx_pool
+
     translate.loadMessages()
 
-    factory = site.WarpSite(resource.WarpResourceWrapper())
-    runtime.config['warpSite'] = factory
+    runtime.config['warpSite'] = site.WarpSite(resource.WarpResourceWrapper())
 
     return configModule
 
-
 # Pre-defined commands -----------------------------------------------
-
 
 class SkeletonOptions(usage.Options):
     optParameters = (
         ("siteDir", "d", ".", "Base directory of the warp site to generate"),
     )
+
 @register(skipConfig = True, optionsParser = SkeletonOptions)
 def skeleton(options):
     "Copy Warp site skeleton into current directory"
     from warp.tools import skeleton
-    print 'Creating skeleton...'
+    print('Creating skeleton...')
     siteDir = getSiteDir(options)
     skeleton.createSkeleton(siteDir)
-
 
 @register()
 def node(options, name):
@@ -153,10 +171,9 @@ def node(options, name):
     from warp.tools import skeleton
     nodes = getSiteDir(options).child('nodes')
     if not nodes.exists():
-        print 'Please run this from a Warp site directory'
+        print('Please run this from a Warp site directory')
         return
     skeleton.createNode(nodes, name)
-
 
 @register()
 def crud(options, name, model):
@@ -164,17 +181,15 @@ def crud(options, name, model):
     from warp.tools import autocrud
     nodes = getSiteDir(options).child('nodes')
     if not nodes.exists():
-        print 'Please run this from a Warp site directory'
+        print('Please run this from a Warp site directory')
         return
     autocrud.autocrud(nodes, name, model)
-
 
 @register()
 def adduser(options):
     "Add a user (interactive)"
     from warp.tools import adduser
     adduser.addUser()
-
 
 @register(needStartup = True)
 def console(options):
@@ -184,13 +199,11 @@ def console(options):
     c = code.InteractiveConsole(locals)
     c.interact()
 
-
 @register(needStartup = True, shortName = "c")
 def command(options, function):
     "Run a site-specific command"
     obj = reflect.namedObject(function)
     obj()
-
 
 class SchemaOptions(usage.Options):
     optFlags = (
