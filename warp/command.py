@@ -10,8 +10,8 @@ from warp.webserver import resource, site
 from warp.common import store, translate
 from warp import runtime
 
-import storm.database
-import storm.twisted.store
+from storm.database import create_database
+from storm.twisted.store import StorePool
 
 from txpostgres import txpostgres
 
@@ -127,7 +127,7 @@ def initialize(options):
 
     # Set up database
     # uri = storm.uri.URI(config['db'])
-    database = storm.database.create_database(config['db'])
+    database = create_database(config['db'])
 
     # Old store with single db connection
     # store.setupStore()
@@ -135,12 +135,12 @@ def initialize(options):
 
     if config.get('trace'):
         import storm.tracer
-        storm.tracer.debug(True, stream=sys.stdout)
+        debug(True, stream=sys.stdout)
 
     # Store pool
     min_size = config.get('db_pool_min', 5)
     max_size = config.get('db_pool_max', 5)
-    pool = storm.twisted.store.StorePool(database, min_size, max_size)
+    pool = StorePool(database, min_size, max_size)
     pool.start()
     runtime.pool = pool
 
