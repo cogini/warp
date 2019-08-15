@@ -183,14 +183,15 @@ def initialize(options):
     d.addCallback(cb_pool_started)
 
     # Store pool
-    min_size = config.get('db_pool_min', 5)
-    max_size = config.get('db_pool_max', 5)
+    min_size = config.get('db_pool_min', 3)
+    max_size = config.get('db_pool_max', 10)
     pool = StorePool(database, min_size, max_size)
     pool.start()
     runtime.pool = pool
     log.msg("storm pool started")
 
-    tx_pool = txpostgres.ConnectionPool(None, min=1,
+    # txpostgres pool
+    tx_pool = txpostgres.ConnectionPool(None, min=3,
                                         dbname=uri.database,
                                         user=uri.username,
                                         password=uri.password,
