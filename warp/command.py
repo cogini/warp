@@ -127,7 +127,6 @@ def start_tx_pool(uri, min_conn=3):
         user=uri.username,
         password=uri.password,
         host=uri.host,
-        cursor_factory=DictCursor,
         min=min_conn
     ).start()
 
