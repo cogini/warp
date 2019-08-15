@@ -154,6 +154,7 @@ def initialize(options):
     print("Loading config from {}".format(options['config']))
     config_module = reflect.namedModule(options['config'])
     config = config_module.config
+    runtime.config.update(config)
 
     runtime.config['siteDir'] = site_dir
     runtime.config['warpDir'] = FilePath(runtime.__file__).parent()
