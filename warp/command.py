@@ -143,7 +143,7 @@ def start_storm_pool(database, config):
     runtime.pool = pool
 
 def cbPoolStarted(result):
-    print("tx_pool started")
+    log.msg("tx_pool started")
     runtime.tx_pool = result
 
 def initialize(options):
@@ -187,6 +187,7 @@ def initialize(options):
     pool = StorePool(database, min_size, max_size)
     pool.start()
     runtime.pool = pool
+    log.msg("storm pool started")
 
     tx_pool = txpostgres.ConnectionPool(None, min=1,
                                         dbname=uri.database,
