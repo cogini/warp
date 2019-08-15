@@ -115,6 +115,7 @@ def initialize(options):
     siteDir = FilePath(options['siteDir'])
     sys.path.insert(0, siteDir.path)
 
+    log.msg("Loading config from %s" % options['config'])
     configModule = reflect.namedModule(options['config'])
     config = configModule.config
     runtime.config.update(config)
