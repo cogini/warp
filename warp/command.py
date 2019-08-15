@@ -15,6 +15,7 @@ from storm.twisted.store import StorePool
 from storm.uri import URI
 
 from txpostgres import txpostgres
+from txpostgres.reconnection import DeadConnectionDetector
 
 class Options(usage.Options):
     optParameters = (
@@ -110,6 +111,36 @@ def cbPoolStarted(result):
     log.msg("tx_pool started")
     runtime.tx_pool = result
 
+def start_tx_pool(uri, min_conn=3):
+    """
+    Start txpostgres connection pool.
+    Returns a deferred that fires when the pool is ready.
+    """
+    def connection_factory(self, *args, **kwargs):
+        kwargs['detector'] = DeadConnectionDetector()
+        return txpostgres.Connection(*args, **kwargs)
+
+    txpostgres.ConnectionPool.connectionFactory = connection_factory
+    return txpostgres.ConnectionPool(
+        None,
+        dbname=uri.database,
+        user=uri.username,
+        password=uri.password,
+        host=uri.host,
+        cursor_factory=DictCursor,
+        min=min_conn
+    ).start()
+
+def start_storm_pool(database, config):
+    "Start Storm db pool"
+    # Store pool
+    min_size = config.get('db_pool_min', 3)
+    max_size = config.get('db_pool_max', 10)
+    pool = StorePool(database, min_size, max_size)
+    pool.start()
+    runtime.pool = pool
+    log.msg("storm pool started")
+
 def initialize(options):
     """Load Warp config and intialize"""
     siteDir = FilePath(options['siteDir'])
@@ -139,21 +170,9 @@ def initialize(options):
         import storm.tracer
         storm.tracer.debug(True, stream=sys.stdout)
 
-    # Store pool
-    min_size = config.get('db_pool_min', 3)
-    max_size = config.get('db_pool_max', 10)
-    pool = StorePool(database, min_size, max_size)
-    pool.start()
-    runtime.pool = pool
-    log.msg("storm pool started")
+    start_storm_pool(database, config)
 
-    # txpostgres pool
-    tx_pool = txpostgres.ConnectionPool(None, min=3,
-                                        dbname=uri.database,
-                                        user=uri.username,
-                                        password=uri.password,
-                                        host=uri.host)
-    d = tx_pool.start()
+    d = start_tx_pool(uri, 3)
     d.addCallback(cbPoolStarted)
 
     translate.loadMessages()
@@ -161,6 +180,7 @@ def initialize(options):
     runtime.config['warpSite'] = site.WarpSite(resource.WarpResourceWrapper())
 
     return configModule
+
 
 # Pre-defined commands -----------------------------------------------
 
