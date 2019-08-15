@@ -92,7 +92,7 @@ def maybeRun(options):
         raise SystemExit
 
 def getSiteDir(options):
-    """Get `siteDir` out of `options`"""
+    "Get `siteDir` out of `options`"
     return FilePath(options['siteDir'])
 
 def doStartup(options):
@@ -112,13 +112,13 @@ def cbPoolStarted(result):
 
 def initialize(options):
     """Load Warp config and intialize"""
-
     site_dir = FilePath(options['siteDir'])
     sys.path.insert(0, site_dir.path)
 
     print("Loading config from {}".format(options['config']))
     config_module = reflect.namedModule(options['config'])
     config = config_module.config
+    runtime.config.update(config)
 
     runtime.config['siteDir'] = site_dir
     runtime.config['warpDir'] = FilePath(runtime.__file__).parent()
