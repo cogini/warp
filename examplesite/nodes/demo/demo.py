@@ -14,13 +14,9 @@ def render_incode(request):
 
     return NOT_DONE_YET
 
-
-
 def render_startCounter(request):
     reactor.callLater(1, lambda: _nextCometMessage(request))
     return "ok"
-
-
 
 counter = 0
 
@@ -34,4 +30,3 @@ def _nextCometMessage(request):
     counter += 1
     session.push({"key": "message", 'counter': counter})
     reactor.callLater(1, lambda: _nextCometMessage(request))
-
