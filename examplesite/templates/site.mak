@@ -17,7 +17,7 @@
   </head>
 
   <body>
- 
+
     ${self.body()}
 
   </body>
