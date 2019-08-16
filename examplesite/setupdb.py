@@ -1,6 +1,5 @@
 from warp.runtime import sql, store
 
-
 tableSpecs = [
     ("person", """
       CREATE TABLE person (
@@ -9,7 +8,6 @@ tableSpecs = [
         birthdate TIMESTAMP WITHOUT TIME ZONE
 )""")
 ]
-
 
 def setup():
     for (table, creationSQL) in tableSpecs:
