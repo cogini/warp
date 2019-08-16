@@ -6,7 +6,6 @@ from warp.runtime import expose
 from models import Person
 
 class CrudPerson(CrudModel):
-
     model = Person
 
     listColumns = ("id", "name", "birthdate", "rating")
@@ -20,17 +19,15 @@ class CrudPerson(CrudModel):
     }
 
     def render_list_name(self, request):
-        return link(
-            self.obj.name,
-            getNode("people"), 
-            "view", [self.obj.id])
+        return link(self.obj.name,
+                    getNode("people"),
+                    "view", [self.obj.id])
 
     def render_proxy_note(self, request):
         return colproxy.AreaProxy(self.obj, "note")
 
     def name(self, request):
         return self.obj.name
-
 
 expose(Person, CrudPerson)
 
