@@ -159,6 +159,7 @@ def initialize(options):
 
     # Set up database
     uri = URI(config['db'])
+    log.msg("Connecting to database %s" % uri.database)
     database = create_database(uri)
 
     # Old store with single db connection
