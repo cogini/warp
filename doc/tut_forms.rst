@@ -63,7 +63,6 @@ In ``nodes/people/people.py``, add:
 Now you should be able to fill in the form on the ``index`` page, and create a
 new ``Person``.
 
-
 Error Handling
 --------------
 

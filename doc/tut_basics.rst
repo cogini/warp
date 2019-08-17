@@ -56,7 +56,6 @@ Save the file and refresh the page, and you should get something like this::
 
 Let's add an ``avatar`` to the database so we can log in.
 
-
 Create a login avatar
 ---------------------
 

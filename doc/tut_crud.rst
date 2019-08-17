@@ -155,7 +155,8 @@ Now your CRUD pages should have a textarea for ``description``, image upload
 and display for ``photo``, and a (rather poorly implemented) price widget for
 ``cash``.
 
-Customizing CRUD
+
+Customizing Crud
 ----------------
 
 There are two ways to customize the behaviour of a CRUD column. The first is to
