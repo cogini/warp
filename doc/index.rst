@@ -14,6 +14,3 @@ Contents
    install
    tutorial
    somedetails
-
-
-

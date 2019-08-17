@@ -1,7 +1,6 @@
 Installation
 ============
 
-
 Debian / Ubuntu
 ---------------
 
@@ -16,7 +15,6 @@ Either download the latest Warp release from PyPI_ and install it in the normal 
   sudo python -c "from twisted.plugin import IPlugin, getPlugins; list(getPlugins(IPlugin))"
 
 Now run ``twistd``, and if ``warp`` is listed in the commands, you're good to go.
-
 
 Windows
 -------
