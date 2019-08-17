@@ -19,7 +19,6 @@ You should now have a simple working warp site at http://localhost:8080.
 
 If you want to know more about what just happened, see :ref:`somedetails`.
 
-
 Change the homepage
 -------------------
 
@@ -71,12 +70,13 @@ For now, that means some simple SQL::
   sqlite> INSERT INTO warp_avatar (email, password) VALUES ('admin@mysite.com', 'sekrit');
   sqlite> .q
 
-Now start your server again (``twistd -n warp``), and log in with those details. Now your home page
-should show::
+Now start your server again (``twistd -n warp``), and log in with those
+details. Now your home page should show::
 
   You are logged in as: admin@mysite.com
 
-Warp keeps its sessions in the DB automatically -- you can restart the server, and you will still be logged in.
+Warp keeps its sessions in the DB automatically -- you can restart the server,
+and you will still be logged in.
 
 
 Add another Mako page
@@ -105,6 +105,7 @@ Of course, we could have just written ``<a href="about">About this site</a>``,
 but Warp's ``helpers`` module will be useful later.
 
 .. _edit-the-site-template:
+
 
 Edit the site template
 ----------------------

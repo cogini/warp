@@ -20,7 +20,6 @@ Let's add a simple form for creating new people, at the bottom of
     </form>
   </p>
 
-
 The only new thing here is the ``url`` helper, which just spits out a URL for
 the given ``node`` and ``facet`` (and ``args``, if given).
 
@@ -31,7 +30,6 @@ page is refreshed.
 
 So instead, we'll write a pure Python facet to create the person, and then
 redirect the user to the new person's ``view`` facet.
-
 
 A POST Handler Facet
 --------------------
@@ -60,7 +58,6 @@ In ``nodes/people/people.py``, add:
       store.commit()
 
       request.redirect(url(request.node, "view", [person.id]))
-
       return "Redirecting..."
 
 Now you should be able to fill in the form on the ``index`` page, and create a
@@ -107,7 +104,6 @@ code:
 
       request.redirect(url(request.node, "view", [person.id]))
       return "Redirecting..."
-
 
 Here we just catch anything that goes wrong in the argument munging. Then we
 use Warp's ``renderLocalTemplate`` helper to re-render the index page. Note
