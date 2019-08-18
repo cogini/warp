@@ -2,20 +2,20 @@ from __future__ import print_function
 import sys
 from inspect import getargspec
 
-from twisted.python import usage, reflect, log
-from twisted.python.filepath import FilePath
-from twisted.internet.defer import waitForDeferred, succeed, fail
-
-from warp.webserver import resource, site
-from warp.common import store, translate
-from warp import runtime
-
 from storm.database import create_database
 from storm.twisted.store import StorePool
 from storm.uri import URI
 
 from txpostgres import txpostgres
 from txpostgres.reconnection import DeadConnectionDetector
+
+from twisted.python import usage, reflect, log
+from twisted.python.filepath import FilePath
+
+from warp.webserver import resource, site
+from warp.common import translate
+from warp import runtime
+from warp.common import schema
 
 class Options(usage.Options):
     optParameters = (
@@ -54,11 +54,14 @@ def register(shortName=None, skipConfig=False, needStartup=False, optionsParser=
                 def parseArgs(self, *args):
                     spec = getargspec(fn)
                     if spec.defaults:
-                        raise usage.UsageError("Custom command cannot have arguments with default values")
+                        raise usage.UsageError(
+                            "Custom command cannot have arguments with default values")
                     if spec.varargs:
-                        raise usage.UsageError("Custom command cannot take variable number of arguments")
+                        raise usage.UsageError(
+                            "Custom command cannot take variable number of arguments")
                     if spec.keywords:
-                        raise usage.UsageError("Custom command cannot take keyword arguments")
+                        raise usage.UsageError(
+                            "Custom command cannot take keyword arguments")
 
                     cmd_args = spec.args[1:]
                     count = len(cmd_args)
@@ -97,7 +100,7 @@ def getSiteDir(options):
     return FilePath(options['siteDir'])
 
 def doStartup(options):
-    """Execute startup function after checking schema if necessary"""
+    "Execute startup function after checking schema if necessary"
     from warp.common.schema import getConfig
     if getConfig()["check"]:
         from warp.common import schema
@@ -107,8 +110,8 @@ def doStartup(options):
     if hasattr(configModule, 'startup'):
         configModule.startup()
 
-def cbPoolStarted(result):
-    log.msg("tx_pool started")
+def cb_pool_started(result):
+    log.msg("Started tx_pool")
     runtime.tx_pool = result
 
 def start_tx_pool(uri, min_conn=3):
@@ -132,16 +135,14 @@ def start_tx_pool(uri, min_conn=3):
 
 def start_storm_pool(database, config):
     "Start Storm db pool"
-    # Store pool
     min_size = config.get('db_pool_min', 3)
     max_size = config.get('db_pool_max', 10)
     pool = StorePool(database, min_size, max_size)
     pool.start()
     runtime.pool = pool
-    log.msg("storm pool started")
 
 def initialize(options):
-    """Load Warp config and intialize"""
+    "Load Warp config and intialize"
     site_dir = FilePath(options['siteDir'])
     sys.path.insert(0, site_dir.path)
 
@@ -159,7 +160,7 @@ def initialize(options):
 
     # Set up database
     uri = URI(config['db'])
-    log.msg("Connecting to database %s" % uri.database)
+    print("Connecting to database {} as user {}".format(uri.database, uri.username))
     database = create_database(uri)
 
     # Old store with single db connection
@@ -171,9 +172,10 @@ def initialize(options):
         storm.tracer.debug(True, stream=sys.stdout)
 
     start_storm_pool(database, config)
+    print("Started storm pool")
 
     d = start_tx_pool(uri, 3)
-    d.addCallback(cbPoolStarted)
+    d.addCallback(cb_pool_started)
 
     translate.loadMessages()
 
@@ -189,10 +191,9 @@ class SkeletonOptions(usage.Options):
         ("siteDir", "d", ".", "Base directory of the warp site to generate"),
     )
 
-@register(skipConfig = True, optionsParser = SkeletonOptions)
+@register(skipConfig=True, optionsParser=SkeletonOptions)
 def skeleton(options):
     "Copy Warp site skeleton into current directory"
-    from warp.tools import skeleton
     print('Creating skeleton...')
     site_dir = getSiteDir(options)
     skeleton.createSkeleton(site_dir)
@@ -231,7 +232,7 @@ def console(options):
     c = code.InteractiveConsole(locals)
     c.interact()
 
-@register(needStartup = True, shortName = "c")
+@register(needStartup=True, shortName="c")
 def command(options, function):
     "Run a site-specific command"
     obj = reflect.namedObject(function)
@@ -242,14 +243,12 @@ class SchemaOptions(usage.Options):
         ("dryRun", "n", "Do a dry-run instead of changing the DB for real"),
     )
 
-@register(optionsParser = SchemaOptions)
+@register(optionsParser=SchemaOptions)
 def snapshotSchema(options):
-    "Snapshot the DB schema (useful for converting existing projects)"
-    from warp.common import schema
-    schema.snapshot(dryRun = True if options.subOptions["dryRun"] else False)
+    "Snapshot DB schema (useful for converting existing projects)"
+    schema.snapshot(dryRun=True if options.subOptions["dryRun"] else False)
 
-@register(optionsParser = SchemaOptions)
+@register(optionsParser=SchemaOptions)
 def migrate(options):
-    "Migrate the DB to meet the code's expectation"
-    from warp.common import schema
-    schema.migrate(dryRun = True if options.subOptions["dryRun"] else False)
+    "Migrate the DB"
+    schema.migrate(dryRun=True if options.subOptions["dryRun"] else False)
