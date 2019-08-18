@@ -142,8 +142,8 @@ def start_storm_pool(database, config):
     pool.start()
     runtime.pool = pool
 
-def cbPoolStarted(result):
-    log.msg("tx_pool started")
+def cb_pool_started(result):
+    log.msg("Started tx_pool")
     runtime.tx_pool = result
 
 def start_tx_pool(uri, min_conn=3):
@@ -167,13 +167,11 @@ def start_tx_pool(uri, min_conn=3):
 
 def start_storm_pool(database, config):
     "Start Storm db pool"
-    # Store pool
     min_size = config.get('db_pool_min', 3)
     max_size = config.get('db_pool_max', 10)
     pool = StorePool(database, min_size, max_size)
     pool.start()
     runtime.pool = pool
-    log.msg("storm pool started")
 
 def initialize(options):
     "Load Warp config and intialize"
@@ -210,17 +208,6 @@ def initialize(options):
 
     d = start_tx_pool(uri, 3)
     d.addCallback(cb_pool_started)
-
-    # Store pool
-    min_size = config.get('db_pool_min', 3)
-    max_size = config.get('db_pool_max', 10)
-    pool = StorePool(database, min_size, max_size)
-    pool.start()
-    runtime.pool = pool
-    log.msg("storm pool started")
-
-    d = start_tx_pool(uri, 3)
-    d.addCallback(cbPoolStarted)
 
     translate.loadMessages()
 
