@@ -57,12 +57,12 @@ In ``nodes/people/people.py``, add:
       store.add(person)
       store.commit()
 
-      request.redirect(url(request.node, "view", [person.id]))
-
+      request.redirect(url(request.node, "view", [person.id])
       return "Redirecting..."
 
 Now you should be able to fill in the form on the ``index`` page, and create a
 new ``Person``.
+
 
 Error Handling
 --------------

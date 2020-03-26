@@ -56,3 +56,27 @@ class WarpSite(Site):
 
         return session
 
+    def _updateLogDateTime(self):
+        "Do not update log timestamp -- we don't need waste resources on this any more."
+
+    def log(self, request):
+        """
+        Custom formatter based on the analogous function in twisted.http.HTTPFactory.
+        As we are using journald to handle logs, we no longer have to include the timestamp
+        in here.
+        """
+        if hasattr(self, "logFile"):
+            session_id = 'AWSALB=%s' % (getattr(request, "albCookie", "None"))
+            org_id = 'ORG=%s' % (getattr(request, "org_id", "None"))
+            line = '%s %s %s - "%s" %d %s "%s" "%s"\n' % (
+                request.getClientIP(),
+                session_id, org_id,
+                # request.getUser() or "-", # the remote user is almost never important
+                '%s %s %s' % (self._escape(request.method),
+                              self._escape(request.uri),
+                              self._escape(request.clientproto)),
+                request.code,
+                request.sentLength or "-",
+                self._escape(request.getHeader("referer") or "-"),
+                self._escape(request.getHeader("user-agent") or "-"))
+            self.logFile.write(line)

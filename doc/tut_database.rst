@@ -30,7 +30,6 @@ directory, in ``models.py``.
 
   class Person(Storm):
       __storm_table__ = 'person'
-
       id = Int(primary=True)
       name = Unicode(default=u'')
       birthdate = DateTime(default_factory = lambda: datetime.datetime(1970, 1, 1))
@@ -43,7 +42,6 @@ And then we'll write some view code in ``nodes/people/index.mak``:
 
   <%
   from models import Person
-
   people = store.find(Person)
   total = people.count()
   %>
@@ -79,7 +77,6 @@ console:
   <models.Person object at 0xa45c64c>
   >>> store.commit()
 
-
 Now reload http://localhost:8080/people/index and you should see::
 
   There are 1 people in the database:
@@ -98,7 +95,6 @@ Let's give each person their own page with their details. We'll put it in the
 
   <%
   from models import Person
-
   id = int(request.resource.args[0])
   person = store.get(Person, id)
   %>

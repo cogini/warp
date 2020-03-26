@@ -3,9 +3,7 @@ Globally-accessible stuff (like the store) initialised at runtime, not import-ti
 """
 
 from storm.locals import Store
-
 from warp.common.events import CommitEventStore
-
 from mako.lookup import TemplateLookup
 
 # Thanks to _habnabit for this clever trick!
@@ -42,4 +40,3 @@ def expose(modelClass, crudClass):
     # the same crud class, but if that actually happens, trivially subclassing
     # the crud class will fix it.
     crudClass.__warp_model__ = modelClass
-

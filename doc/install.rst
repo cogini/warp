@@ -35,7 +35,7 @@ Add the MinGW path, the Python executable path, and the Python scripts path to y
 
 Tell Python to use MinGW to build extension modules, by writing a file like ``c:\Python26\Lib\distutils\distutils.cfg`` containing:
 
-:: 
+::
 
   [build]
   compiler = mingw32

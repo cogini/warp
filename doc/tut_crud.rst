@@ -11,6 +11,7 @@ This implicitly creates the ``admin`` node, making it redirect to
 ``admin/people``. Restart your server, and http://localhost:8080/admin should
 take you to the new page.
 
+
 The CRUD Model
 --------------
 
@@ -107,7 +108,7 @@ Warp's custom column types:
 
 ``NonEmptyUnicode`` is a subclass of Storm's regular ``Unicode`` column type.
 It behaves exactly the same, but Warp maps it to a ``column proxy`` (see
-:ref:`below<column-proxies>`) which rejects empty values.
+:ref:`below<column-proxies>`) which rejects empty values
 
 Restart your server and try to enter an empty name in a Person now -- you
 should get an informative error.
@@ -148,16 +149,15 @@ pages:
 .. code-block:: python
 
     [...]
-
     crudColumns = ("name", "birthdate", "photo", "description", "cash")
-
     [...]
 
 Now your CRUD pages should have a textarea for ``description``, image upload
 and display for ``photo``, and a (rather poorly implemented) price widget for
 ``cash``.
 
-Customizing Crud
+
+Customizing CRUD
 ----------------
 
 There are two ways to customize the behaviour of a CRUD column. The first is to
@@ -172,7 +172,6 @@ method. Here it is again:
 
   def render_list_name(self, request):
       return link(self.obj.name, request.node, "view", [self.obj.id])
-
 
 This method is called whenever CRUD wants to render a ``Person.name`` field in
 a list page. We can write another method to render it in view pages:
@@ -189,6 +188,7 @@ As well as ``render_*`` and ``render_list_*``, you can also write
 now and talk about ``column proxies`` instead.
 
 .. _column-proxies:
+
 
 Column Proxies
 --------------
@@ -256,7 +256,8 @@ a tiny font and disallowing shouting. We'll put it in
 
           setattr(self.obj, self.col, val)
 
-We're staying away from ``render_edit`` for this example, since it needs more explanation.
+We're staying away from ``render_edit`` for this example, since it needs more
+explanation.
 
 For now, let's add a ``quote`` column to our person table::
 
@@ -269,9 +270,7 @@ Add it to our Person model:
 .. code-block:: python
 
   class Person(Storm):
-
       [...]
-
       quote = Unicode()
 
 Finally, we add it to ``CrudPerson.crudColumns``, and tell it to use our new
@@ -280,11 +279,8 @@ Finally, we add it to ``CrudPerson.crudColumns``, and tell it to use our new
 .. code-block:: python
 
   class CrudPerson(CrudModel):
-
     [...]
-
     crudColumns = ("name", "birthdate", "photo", "description", "cash", "quote")
-
     [...]
 
     def render_proxy_quote(self, request):

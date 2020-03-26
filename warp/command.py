@@ -179,8 +179,8 @@ def initialize(options):
 
     translate.loadMessages()
 
-    runtime.config['warpSite'] = site.WarpSite(resource.WarpResourceWrapper())
-
+    runtime.config['warpSite'] = site.WarpSite(resource.WarpResourceWrapper()
+                                               
     return config_module
 
 
@@ -191,9 +191,10 @@ class SkeletonOptions(usage.Options):
         ("siteDir", "d", ".", "Base directory of the warp site to generate"),
     )
 
-@register(skipConfig=True, optionsParser=SkeletonOptions)
+@register(skipConfig = True, optionsParser = SkeletonOptions)
 def skeleton(options):
     "Copy Warp site skeleton into current directory"
+    from warp.tools import skeleton
     print('Creating skeleton...')
     site_dir = getSiteDir(options)
     skeleton.createSkeleton(site_dir)

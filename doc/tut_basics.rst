@@ -104,6 +104,7 @@ but Warp's ``helpers`` module will be useful later.
 
 .. _edit-the-site-template:
 
+
 Edit the site template
 ----------------------
 
@@ -162,6 +163,7 @@ loops. We also have a new ``Warp`` word, ``facet``. Just as a ``node`` is a
 directory in your URLs, a ``facet`` is a page. So far, our two ``home`` facets
 (``index`` and ``about``) have been mako templates, but in the next section
 we'll write one which is pure Python.
+
 
 A Pure-Python Facet
 -------------------
