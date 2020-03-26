@@ -19,6 +19,7 @@ You should now have a simple working warp site at http://localhost:8080.
 
 If you want to know more about what just happened, see :ref:`somedetails`.
 
+
 Change the homepage
 -------------------
 
@@ -197,7 +198,6 @@ Since this code is Python, rather than Mako, you'll need to restart your server
 Now load http://localhost:8080/home/delayed. The server will wait for five
 seconds before loading the page. During those five seconds, it can still
 process other requests.
-
 
 A New Node
 ----------

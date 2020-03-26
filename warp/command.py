@@ -158,18 +158,14 @@ def initialize(options):
         runtime.config["schema"] = runtime.config.get("schema", {})
         runtime.config["schema"]["check"] = False
 
+    # Old store with single db connection
+    # store.setupStore()
+
     # Set up database
     uri = URI(config['db'])
     print("Connecting to database {} as user {}".format(uri.database, uri.username))
     database = create_database(uri)
-
-    # Old store with single db connection
-    # store.setupStore()
     runtime.avatar_store.__init__(database)
-
-    if config.get('trace'):
-        import storm.tracer
-        storm.tracer.debug(True, stream=sys.stdout)
 
     start_storm_pool(database, config)
     print("Started storm pool")
