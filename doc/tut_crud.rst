@@ -107,7 +107,6 @@ Warp's custom column types:
       name = columns.NonEmptyUnicode(default=u'')
       birthdate = DateTime(default_factory = lambda: datetime.datetime(1970, 1, 1))
 
-
 ``NonEmptyUnicode`` is a subclass of Storm's regular ``Unicode`` column type.
 It behaves exactly the same, but Warp maps it to a ``column proxy`` (see
 :ref:`below<column-proxies>`) which rejects empty values.
@@ -156,7 +155,6 @@ Now your CRUD pages should have a textarea for ``description``, image upload
 and display for ``photo``, and a (rather poorly implemented) price widget for
 ``cash``.
 
-
 Customizing CRUD
 ----------------
 
@@ -186,7 +184,6 @@ Now the name will be a nice bright red.
 As well as ``render_*`` and ``render_list_*``, you can also write
 ``render_edit_*`` and ``save_*`` methods, but we'll skip right over those for
 now and talk about ``column proxies`` instead.
-
 
 .. _column-proxies:
 
