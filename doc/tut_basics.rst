@@ -197,7 +197,6 @@ Now load http://localhost:8080/home/delayed. The server will wait for five
 seconds before loading the page. During those five seconds, it can still
 process other requests.
 
-
 A New Node
 ----------
 

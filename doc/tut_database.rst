@@ -77,7 +77,6 @@ console:
   <models.Person object at 0xa45c64c>
   >>> store.commit()
 
-
 Now reload http://localhost:8080/people/index and you should see::
 
   There are 1 people in the database:
@@ -93,6 +92,7 @@ Let's give each person their own page with their details. We'll put it in the
 .. code-block:: mako
 
   <%inherit file="/site.mak"/>
+
   <%
   from models import Person
   id = int(request.resource.args[0])

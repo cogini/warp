@@ -173,6 +173,37 @@ def start_storm_pool(database, config):
     pool.start()
     runtime.pool = pool
 
+def cb_pool_started(result):
+    log.msg("Started tx_pool")
+    runtime.tx_pool = result
+
+def start_tx_pool(uri, min_conn=3):
+    """
+    Start txpostgres connection pool.
+    Returns a deferred that fires when the pool is ready.
+    """
+    def connection_factory(self, *args, **kwargs):
+        kwargs['detector'] = DeadConnectionDetector()
+        return txpostgres.Connection(*args, **kwargs)
+
+    txpostgres.ConnectionPool.connectionFactory = connection_factory
+    return txpostgres.ConnectionPool(
+        None,
+        dbname=uri.database,
+        user=uri.username,
+        password=uri.password,
+        host=uri.host,
+        min=min_conn
+    ).start()
+
+def start_storm_pool(database, config):
+    "Start Storm db pool"
+    min_size = config.get('db_pool_min', 3)
+    max_size = config.get('db_pool_max', 10)
+    pool = StorePool(database, min_size, max_size)
+    pool.start()
+    runtime.pool = pool
+
 def initialize(options):
     "Load Warp config and intialize"
     site_dir = FilePath(options['siteDir'])
@@ -202,6 +233,15 @@ def initialize(options):
     if config.get('trace'):
         import storm.tracer
         storm.tracer.debug(True, stream=sys.stdout)
+
+    # Old store with single db connection
+    # store.setupStore()
+
+    # Set up database
+    uri = URI(config['db'])
+    print("Connecting to database {} as user {}".format(uri.database, uri.username))
+    database = create_database(uri)
+    runtime.avatar_store.__init__(database)
 
     start_storm_pool(database, config)
     print("Started storm pool")

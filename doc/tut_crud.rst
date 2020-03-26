@@ -84,7 +84,6 @@ Note that we pass the Storm model, ``Person``, to the renderer, rather than the
 ``CrudModel``. Warp will find the ``CrudModel`` itself, thanks to the previous
 ``expose`` call.
 
-
 Warp Column Types
 -----------------
 
@@ -188,6 +187,7 @@ now and talk about ``column proxies`` instead.
 
 .. _column-proxies:
 
+
 Column Proxies
 --------------
 
@@ -254,7 +254,6 @@ a tiny font and disallowing shouting. We'll put it in
 
           setattr(self.obj, self.col, val)
 
-
 We're staying away from ``render_edit`` for this example, since it needs more
 explanation.
 
@@ -269,9 +268,7 @@ Add it to our Person model:
 .. code-block:: python
 
   class Person(Storm):
-
       [...]
-
       quote = Unicode()
 
 Finally, we add it to ``CrudPerson.crudColumns``, and tell it to use our new
@@ -280,11 +277,8 @@ Finally, we add it to ``CrudPerson.crudColumns``, and tell it to use our new
 .. code-block:: python
 
   class CrudPerson(CrudModel):
-
     [...]
-
     crudColumns = ("name", "birthdate", "photo", "description", "cash", "quote")
-
     [...]
 
     def render_proxy_quote(self, request):
