@@ -18,7 +18,6 @@ Then run::
 You should now have a simple working warp site at http://localhost:8080.
 If you want to know more about what just happened, see :ref:`somedetails`.
 
-
 Change the homepage
 -------------------
 
@@ -55,7 +54,6 @@ Save the file and refresh the page, and you should get something like this::
   Your IP address is: '127.0.0.1'
 
 Let's add an ``avatar`` to the database so we can log in.
-
 
 Create a login avatar
 ---------------------
@@ -197,7 +195,6 @@ Since this code is Python, rather than Mako, you'll need to restart your server
 Now load http://localhost:8080/home/delayed. The server will wait for five
 seconds before loading the page. During those five seconds, it can still
 process other requests.
-
 
 A New Node
 ----------
